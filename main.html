@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MS-700 Domain 2 — Manage Chat, Teams, Channels & Apps</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+  :root{--bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;--accent:#58a6ff;--accent2:#3fb950;--warn:#f78166;--warn2:#d29922;--text:#e6edf3;--muted:#8b949e;--code-bg:#1c2128;--radius:8px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;padding-bottom:60px;}
+  header{background:linear-gradient(135deg,#1a2332 0%,#0d1117 60%);border-bottom:1px solid var(--border);padding:32px 24px 24px;position:relative;overflow:hidden;}
+  header::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(63,185,80,.12) 0%,transparent 70%);border-radius:50%;}
+  header::after{content:'D2';position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:100px;font-weight:800;color:rgba(63,185,80,.06);letter-spacing:-4px;user-select:none;}
+  .badge{display:inline-block;background:rgba(63,185,80,.15);border:1px solid rgba(63,185,80,.3);color:var(--accent2);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:20px;margin-bottom:12px;}
+  header h1{font-size:clamp(18px,4vw,30px);font-weight:800;line-height:1.2;}
+  header p{margin-top:8px;color:var(--muted);font-size:14px;max-width:560px;}
+  .tabs{display:flex;gap:4px;padding:16px 24px 0;border-bottom:1px solid var(--border);background:var(--surface);flex-wrap:wrap;}
+  .tab-btn{background:none;border:none;color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;white-space:nowrap;}
+  .tab-btn:hover{color:var(--text);}
+  .tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+  .container{max-width:900px;margin:0 auto;padding:24px;}
+  .tab-pane{display:none;}
+  .tab-pane.active{display:block;}
+  .section-title{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin:32px 0 16px;display:flex;align-items:center;gap:10px;}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-bottom:16px;}
+  .info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+  .info-card h3{font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;}
+  .info-card ul{list-style:none;}
+  .info-card li{font-size:13px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;}
+  .info-card li:last-child{border-bottom:none;}
+  .tag{font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600;white-space:nowrap;}
+  .tag-blue{background:rgba(88,166,255,.15);color:var(--accent);}
+  .tag-green{background:rgba(63,185,80,.15);color:var(--accent2);}
+  .tag-red{background:rgba(247,129,102,.15);color:var(--warn);}
+  .tag-yellow{background:rgba(210,153,34,.15);color:var(--warn2);}
+  code,.mono{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:#79c0ff;}
+  .code-block{background:var(--code-bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;color:#e6edf3;overflow-x:auto;margin-bottom:12px;white-space:pre;}
+  .kw{color:#ff7b72;}.fn{color:#d2a8ff;}.param{color:#79c0ff;}.str{color:#a5d6ff;}.cmt{color:#8b949e;}
+  .scorebar{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:24px;}
+  .score-label{font-size:13px;color:var(--muted);}
+  .score-num{font-size:20px;font-weight:800;color:var(--accent2);}
+  .progress-wrap{flex:1;height:6px;background:var(--border);border-radius:99px;}
+  .progress-bar{height:6px;background:var(--accent2);border-radius:99px;transition:width .4s;}
+  .reset-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .2s;}
+  .reset-btn:hover{border-color:var(--warn);color:var(--warn);}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  .question-meta{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+  .q-num{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;}
+  .q-cat{font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(63,185,80,.1);color:var(--accent2);font-weight:600;}
+  .q-trap{font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(210,153,34,.1);color:var(--warn2);font-weight:600;}
+  .question-text{font-size:15px;font-weight:600;line-height:1.6;margin-bottom:16px;}
+  .scenario-box{background:var(--code-bg);border-left:3px solid var(--warn2);border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--muted);line-height:1.6;}
+  .options{display:flex;flex-direction:column;gap:8px;}
+  .option-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Syne',sans-serif;font-size:13px;padding:10px 14px;cursor:pointer;text-align:left;transition:all .2s;line-height:1.5;}
+  .option-btn:hover:not(:disabled){border-color:var(--accent2);background:rgba(63,185,80,.08);}
+  .option-btn.correct{border-color:var(--accent2);background:rgba(63,185,80,.12);color:var(--accent2);}
+  .option-btn.wrong{border-color:var(--warn);background:rgba(247,129,102,.12);color:var(--warn);}
+  .option-btn:disabled{cursor:default;}
+  .explanation{display:none;margin-top:14px;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-size:13px;line-height:1.7;color:var(--muted);}
+  .explanation.show{display:block;}
+  .explanation strong{color:var(--text);}
+  .trap-warn{display:inline-block;background:rgba(210,153,34,.15);color:var(--warn2);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;margin-right:6px;text-transform:uppercase;letter-spacing:1px;}
+  .ps-exercise{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  .ps-exercise h4{font-size:13px;font-weight:700;color:var(--warn2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+  .ps-scenario{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+  .ps-line{font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:12px;line-height:2.2;display:flex;flex-wrap:wrap;align-items:center;gap:4px;}
+  .ps-select{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.4);color:var(--accent2);border-radius:4px;padding:2px 6px;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;min-width:120px;transition:border-color .2s;}
+  .ps-select.correct-sel{border-color:var(--accent2);background:rgba(63,185,80,.15);color:var(--accent2);}
+  .ps-select.wrong-sel{border-color:var(--warn);background:rgba(247,129,102,.15);color:var(--warn);}
+  .ps-check-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(63,185,80,.12);border:1px solid rgba(63,185,80,.3);color:var(--accent2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:8px 16px;border-radius:6px;cursor:pointer;transition:all .2s;}
+  .ps-check-btn:hover{background:rgba(63,185,80,.2);}
+  .ps-result{display:none;margin-top:12px;padding:12px 14px;border-radius:6px;font-size:13px;line-height:1.7;}
+  .ps-result.show{display:block;}
+  .ps-result.ok{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);color:var(--accent2);}
+  .ps-result.fail{background:rgba(247,129,102,.1);border:1px solid rgba(247,129,102,.3);color:var(--warn);}
+  @media(max-width:600px){.info-grid{grid-template-columns:1fr;}.tabs{gap:2px;}.tab-btn{font-size:12px;padding:8px 10px;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="badge">MS-700 · Domain 2 · January 2026 Objectives</div>
+  <h1>Domain 2: Manage Chat, Teams, Channels &amp; Apps</h1>
+  <p>Extended practice quiz · 20–25% of exam · Scenario questions, traps &amp; PowerShell drop-down exercises</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('cheatsheet',this)">📋 Cheat Sheet</button>
+  <button class="tab-btn" onclick="switchTab('quiz-teams',this)">👥 Teams &amp; Templates</button>
+  <button class="tab-btn" onclick="switchTab('quiz-channels',this)">💬 Channels &amp; Messaging</button>
+  <button class="tab-btn" onclick="switchTab('quiz-apps',this)">🧩 Apps &amp; Permissions</button>
+  <button class="tab-btn" onclick="switchTab('powershell',this)">⚡ PowerShell</button>
+</div>
+
+<!-- CHEAT SHEET -->
+<div class="tab-pane active" id="tab-cheatsheet">
+<div class="container">
+
+  <div class="section-title">Channel Types — Key Differences</div>
+  <div class="info-grid">
+    <div class="info-card">
+      <h3>Standard Channel</h3>
+      <ul>
+        <li>Visibility <span class="tag tag-green">All team members</span></li>
+        <li>Who can create <span class="tag tag-blue">Configurable (members/owners)</span></li>
+        <li>SharePoint site <span class="tag tag-blue">Shared team site</span></li>
+        <li>Guests <span class="tag tag-green">Allowed (if tenant permits)</span></li>
+        <li>Moderation <span class="tag tag-green">Supported</span></li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h3>Private Channel</h3>
+      <ul>
+        <li>Visibility <span class="tag tag-yellow">Only invited members</span></li>
+        <li>Max per team <span class="tag tag-blue">30 private channels</span></li>
+        <li>SharePoint site <span class="tag tag-red">Own separate site collection</span></li>
+        <li>Guests <span class="tag tag-green">Allowed</span></li>
+        <li>Apps/Tabs <span class="tag tag-red">Limited (no connectors)</span></li>
+        <li>Bots <span class="tag tag-red">Not supported</span></li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h3>Shared Channel</h3>
+      <ul>
+        <li>Visibility <span class="tag tag-yellow">Invited members + external via B2B DC</span></li>
+        <li>Max per team <span class="tag tag-blue">50 shared channels</span></li>
+        <li>SharePoint site <span class="tag tag-red">Own separate site collection</span></li>
+        <li>External users <span class="tag tag-red">B2B Direct Connect (no guest account)</span></li>
+        <li>Guests (B2B invite) <span class="tag tag-red">NOT supported</span></li>
+        <li>Teams meetings <span class="tag tag-red">Not supported in shared channels</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Team Roles &amp; Limits</div>
+  <div class="info-grid">
+    <div class="info-card">
+      <h3>Team Limits (2026)</h3>
+      <ul>
+        <li>Max members per team <span class="tag tag-blue">25,000</span></li>
+        <li>Max channels (standard) <span class="tag tag-blue">200 per team</span></li>
+        <li>Max private channels <span class="tag tag-blue">30 per team</span></li>
+        <li>Max shared channels <span class="tag tag-blue">50 per team</span></li>
+        <li>Max teams per user <span class="tag tag-blue">1,000</span></li>
+        <li>Max owners per team <span class="tag tag-blue">100</span></li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h3>Team Roles</h3>
+      <ul>
+        <li>Owner <span class="tag tag-green">Full control of team settings</span></li>
+        <li>Member <span class="tag tag-blue">Standard collaboration</span></li>
+        <li>Guest <span class="tag tag-yellow">Limited — no org data access</span></li>
+        <li>Moderator role <span class="tag tag-blue">Control who posts in a channel</span></li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h3>Messaging Policy Settings</h3>
+      <ul>
+        <li>Delete sent messages <span class="tag tag-blue">Owner/member/off</span></li>
+        <li>Edit sent messages <span class="tag tag-blue">Configurable</span></li>
+        <li>Read receipts <span class="tag tag-blue">User-controlled/On/Off</span></li>
+        <li>Priority notifications <span class="tag tag-yellow">E5 / Compliance add-on</span></li>
+        <li>URL previews <span class="tag tag-blue">Configurable</span></li>
+        <li>Giphy / memes / stickers <span class="tag tag-blue">Configurable per policy</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">App Management — Where to Configure</div>
+  <div class="info-grid">
+    <div class="info-card">
+      <h3>App Permission Policies</h3>
+      <ul>
+        <li>Purpose <span class="tag tag-blue">Control which apps users can install</span></li>
+        <li>Scope <span class="tag tag-blue">Microsoft / 3rd party / Custom apps</span></li>
+        <li>Where <span class="tag tag-blue">Teams Admin Center → Apps → Permission policies</span></li>
+        <li>Block specific app <span class="tag tag-red">Block at org level in Manage apps</span></li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h3>App Setup Policies</h3>
+      <ul>
+        <li>Purpose <span class="tag tag-blue">Pin apps to user's Teams left bar</span></li>
+        <li>Allow user pinning <span class="tag tag-blue">Configurable</span></li>
+        <li>Installed apps <span class="tag tag-blue">Pre-install apps for users</span></li>
+        <li>Where <span class="tag tag-blue">Teams Admin Center → Apps → Setup policies</span></li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h3>Custom / LOB Apps</h3>
+      <ul>
+        <li>Upload method <span class="tag tag-blue">Teams Admin Center → Manage apps → Upload</span></li>
+        <li>Allow custom apps (org) <span class="tag tag-blue">Org-wide app settings toggle</span></li>
+        <li>Allow custom apps (user) <span class="tag tag-blue">App permission policy</span></li>
+        <li>Allow user upload (sideload) <span class="tag tag-yellow">App setup policy setting</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Teams Advisor &amp; Frontline Workers</div>
+  <div class="info-grid">
+    <div class="info-card">
+      <h3>Advisor for Teams</h3>
+      <ul>
+        <li>Purpose <span class="tag tag-blue">Guided Teams rollout planning</span></li>
+        <li>Creates <span class="tag tag-blue">Deployment team + Planner tasks</span></li>
+        <li>Location <span class="tag tag-blue">Teams Admin Center → Planning → Advisor</span></li>
+        <li>Who uses it <span class="tag tag-blue">Teams admins planning new deployments</span></li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h3>Frontline Teams</h3>
+      <ul>
+        <li>License <span class="tag tag-yellow">M365 F1 / F3 (Frontline)</span></li>
+        <li>Feature <span class="tag tag-blue">Deploy to large frontline worker groups</span></li>
+        <li>Shift management <span class="tag tag-blue">Shifts app in Teams</span></li>
+        <li>Deploy via <span class="tag tag-blue">Teams Admin Center → Frontline deployment</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Key PowerShell Cmdlets — Domain 2</div>
+  <div class="code-block"><span class="cmt"># Teams creation</span>
+<span class="fn">New-Team</span> <span class="param">-DisplayName</span> <span class="str">"Marketing"</span> <span class="param">-Visibility</span> <span class="str">Private</span> <span class="param">-Template</span> <span class="str">"com.microsoft.teams.template.ManageAProject"</span>
+<span class="fn">Get-Team</span> <span class="param">-DisplayName</span> <span class="str">"Marketing"</span>
+<span class="fn">Set-Team</span> <span class="param">-GroupId</span> &lt;GUID&gt; <span class="param">-AllowCreateUpdateChannels</span> <span class="str">$false</span>
+
+<span class="cmt"># Team membership</span>
+<span class="fn">Add-TeamUser</span> <span class="param">-GroupId</span> &lt;GUID&gt; <span class="param">-User</span> <span class="str">"user@domain.com"</span> <span class="param">-Role</span> <span class="str">Owner</span>
+<span class="fn">Remove-TeamUser</span> <span class="param">-GroupId</span> &lt;GUID&gt; <span class="param">-User</span> <span class="str">"user@domain.com"</span>
+<span class="fn">Get-TeamUser</span> <span class="param">-GroupId</span> &lt;GUID&gt;
+
+<span class="cmt"># Channels</span>
+<span class="fn">New-TeamChannel</span> <span class="param">-GroupId</span> &lt;GUID&gt; <span class="param">-DisplayName</span> <span class="str">"Budget"</span> <span class="param">-MembershipType</span> <span class="str">Private</span>
+<span class="fn">Get-TeamChannel</span> <span class="param">-GroupId</span> &lt;GUID&gt;
+<span class="fn">Remove-TeamChannel</span> <span class="param">-GroupId</span> &lt;GUID&gt; <span class="param">-DisplayName</span> <span class="str">"Budget"</span>
+<span class="fn">Set-TeamChannel</span> <span class="param">-GroupId</span> &lt;GUID&gt; <span class="param">-CurrentDisplayName</span> <span class="str">"Budget"</span> <span class="param">-NewDisplayName</span> <span class="str">"Finance"</span>
+<span class="fn">Add-TeamChannelUser</span> <span class="param">-GroupId</span> &lt;GUID&gt; <span class="param">-DisplayName</span> <span class="str">"Budget"</span> <span class="param">-User</span> <span class="str">"user@domain.com"</span>
+
+<span class="cmt"># Messaging policies</span>
+<span class="fn">New-CsTeamsMessagingPolicy</span> <span class="param">-Identity</span> <span class="str">"NoGiphy"</span> <span class="param">-AllowGiphy</span> <span class="str">$false</span>
+<span class="fn">Grant-CsTeamsMessagingPolicy</span> <span class="param">-Identity</span> <span class="str">"user@domain.com"</span> <span class="param">-PolicyName</span> <span class="str">"NoGiphy"</span>
+<span class="fn">Get-CsTeamsMessagingPolicy</span>
+
+<span class="cmt"># Archive a team</span>
+<span class="fn">Set-TeamArchivedState</span> <span class="param">-GroupId</span> &lt;GUID&gt; <span class="param">-Archived</span> <span class="str">$true</span></div>
+
+</div>
+</div>
+
+<!-- TEAMS QUIZ -->
+<div class="tab-pane" id="tab-quiz-teams">
+<div class="container">
+  <div class="scorebar">
+    <div><div class="score-label">Score</div><div class="score-num" id="score-teams">0 / 0</div></div>
+    <div class="progress-wrap"><div class="progress-bar" id="prog-teams" style="width:0%"></div></div>
+    <button class="reset-btn" onclick="resetSection('teams')">Reset</button>
+  </div>
+  <div id="q-teams"></div>
+</div>
+</div>
+
+<!-- CHANNELS QUIZ -->
+<div class="tab-pane" id="tab-quiz-channels">
+<div class="container">
+  <div class="scorebar">
+    <div><div class="score-label">Score</div><div class="score-num" id="score-channels">0 / 0</div></div>
+    <div class="progress-wrap"><div class="progress-bar" id="prog-channels" style="width:0%"></div></div>
+    <button class="reset-btn" onclick="resetSection('channels')">Reset</button>
+  </div>
+  <div id="q-channels"></div>
+</div>
+</div>
+
+<!-- APPS QUIZ -->
+<div class="tab-pane" id="tab-quiz-apps">
+<div class="container">
+  <div class="scorebar">
+    <div><div class="score-label">Score</div><div class="score-num" id="score-apps">0 / 0</div></div>
+    <div class="progress-wrap"><div class="progress-bar" id="prog-apps" style="width:0%"></div></div>
+    <button class="reset-btn" onclick="resetSection('apps')">Reset</button>
+  </div>
+  <div id="q-apps"></div>
+</div>
+</div>
+
+<!-- POWERSHELL -->
+<div class="tab-pane" id="tab-powershell">
+<div class="container">
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Complete each PowerShell command using the drop-down blanks.</p>
+  <div id="ps-exercises"></div>
+</div>
+</div>
+
+<script>
+const sections = {
+teams:[
+  {q:"You need to create a new private team called 'Project Alpha' using PowerShell. Which cmdlet and parameter set is correct?",opts:["New-Team -DisplayName 'Project Alpha' -AccessType Private","New-Team -DisplayName 'Project Alpha' -Visibility Private","New-CsTeam -Name 'Project Alpha' -Type Private","Set-Team -DisplayName 'Project Alpha' -Visibility Private"],answer:1,cat:"Team Creation",explain:"<strong>New-Team -DisplayName 'Project Alpha' -Visibility Private</strong> is correct. The parameter is -Visibility, not -AccessType. Set-Team is used to modify existing teams. New-CsTeam does not exist."},
+  {q:"Your organization wants to create a team based on the 'Manage a Project' built-in template. Which method correctly applies a template during team creation via PowerShell?",opts:["New-Team -DisplayName 'Alpha' -Template 'Manage a Project'","New-Team -DisplayName 'Alpha' -Template 'com.microsoft.teams.template.ManageAProject'","Set-Team -GroupId <GUID> -Template 'ManageAProject'","New-TeamFromTemplate -TemplateName 'Manage a Project'"],answer:1,cat:"Templates",explain:"<strong>Built-in template IDs use the format com.microsoft.teams.template.*</strong> in PowerShell. The friendly name 'Manage a Project' is not valid for the -Template parameter. New-TeamFromTemplate does not exist."},
+  {q:"A team has been inactive for 6 months. You want to preserve its content but prevent further editing. What is the correct action?",opts:["Delete the team","Archive the team","Remove all members from the team","Set the team to read-only via a messaging policy"],answer:1,cat:"Team Lifecycle",explain:"<strong>Archiving a team</strong> makes it read-only — users can still access all content but cannot post new messages or make changes. The team and its SharePoint site are preserved. Deletion removes the team and starts the 30-day soft-delete window."},
+  {q:"Which tool should you use to plan a Teams rollout, get guided deployment tasks, and track progress in Microsoft Planner?",opts:["Microsoft 365 Admin Center → Setup wizard","Advisor for Teams (in Teams Admin Center → Planning)","Teams Network Planner","Microsoft 365 learning pathways"],answer:1,cat:"Rollout Planning",explain:"<strong>Advisor for Teams</strong> creates a deployment team and generates a Planner board with tasks organized by workload (Chat, Meetings, Calling). It's accessed from Teams Admin Center → Planning → Advisor for Teams."},
+  {q:"You need to add user@contoso.com to a team as an Owner using PowerShell. Which command is correct?",opts:["Add-TeamUser -GroupId <GUID> -User 'user@contoso.com' -Role Member","Set-TeamUser -GroupId <GUID> -User 'user@contoso.com' -Role Owner","Add-TeamUser -GroupId <GUID> -User 'user@contoso.com' -Role Owner","Grant-TeamOwner -GroupId <GUID> -User 'user@contoso.com'"],answer:2,cat:"Team Membership",explain:"<strong>Add-TeamUser -GroupId &lt;GUID&gt; -User 'user@domain.com' -Role Owner</strong> is correct. The -Role parameter accepts 'Owner' or 'Member'. Set-TeamUser and Grant-TeamOwner do not exist."},
+  {q:"What is the maximum number of members allowed in a Microsoft Teams team?",opts:["5,000","10,000","25,000","50,000"],answer:2,cat:"Limits",explain:"<strong>The maximum number of members in a Teams team is 25,000</strong>, which is also the maximum for a Microsoft 365 group. Teams with more than 5,000 members have some features limited."},
+  {q:"Your organization uses Microsoft 365 Frontline Worker (F1/F3) licenses. Which Teams admin center feature is used to deploy teams to all frontline workers at scale?",opts:["Advisor for Teams","Teams templates with auto-provision","Frontline deployment in Teams Admin Center","Policy packages for Frontline workers"],answer:2,cat:"Frontline Workers",explain:"<strong>Frontline deployment</strong> in Teams Admin Center provides a wizard to create and manage teams for frontline workers at scale, using dynamic membership rules based on Azure AD attributes. Policy packages for Frontline workers is a separate but complementary feature."},
+  {q:"A team owner wants to prevent regular team members from creating new channels. Where is this configured?",opts:["Teams Admin Center → Org-wide settings → Team settings → Allow members to create channels","Teams Admin Center → Teams → select the team → Settings → Member permissions","The individual channel settings in the Teams client","Messaging policy assigned to the members"],answer:1,cat:"Team Settings",trap:true,explain:"<span class='trap-warn'>Trap</span> Per-team channel creation permissions are in <strong>Teams Admin Center → Teams → [select team] → Settings → Member permissions</strong>. The org-wide setting controls the default but per-team settings override it for that specific team."},
+],
+channels:[
+  {q:"A user needs to collaborate with an external partner on a specific project in a shared channel. The external user should keep their own identity and no guest account should be created. Which channel type supports this?",opts:["Standard channel with guest access enabled","Private channel with external sharing","Shared channel with B2B Direct Connect configured","Standard channel with federation enabled"],answer:2,cat:"Shared Channels",explain:"<strong>Shared channels support external collaboration via B2B Direct Connect</strong>, where the external user retains their own identity. Guest accounts (B2B invite) are NOT supported in shared channels. External users in shared channels access the channel from their own Teams client."},
+  {q:"How many shared channels can a single team contain?",opts:["10","30","50","100"],answer:2,cat:"Channel Limits",explain:"<strong>A team supports up to 50 shared channels</strong> and 30 private channels. The limit for standard channels is 200 per team. These limits are per team, not per user."},
+  {q:"A private channel in Teams has its own separate SharePoint site collection. What implication does this have for a Teams admin?",opts:["Private channel files cannot be searched from Teams","Private channel content requires a separate retention policy scope","Private channel data is stored outside Microsoft 365","Private channels cannot be backed up"],answer:1,cat:"Private Channels",explain:"<strong>Because private channels have their own SharePoint site collection</strong>, you need to explicitly include them in eDiscovery, compliance, and retention policy scopes. They are not included automatically when you scope a policy to the parent team site."},
+  {q:"You want to create a messaging policy that prevents users from editing messages after sending. What parameter do you set?",opts:["Set AllowUserEditMessages to $false in the messaging policy","Set AllowMessageEditing to $false in a channel policy","Set EditMessageTimeout to 0 in org-wide settings","Disable message editing in the Teams client settings"],answer:0,cat:"Messaging Policy",explain:"<strong>AllowUserEditMessages = $false</strong> in the Teams messaging policy prevents users from editing sent messages. This is set via New-CsTeamsMessagingPolicy or Set-CsTeamsMessagingPolicy, then granted to users."},
+  {q:"Which messaging policy setting controls whether users can send urgent (priority) notifications in chat?",opts:["AllowPriorityMessages","AllowUrgentMessages","AllowImmersiveReader","AllowSmartCompose"],answer:0,cat:"Messaging Policy",explain:"<strong>AllowPriorityMessages</strong> controls priority notifications (urgent/important flags) in the Teams messaging policy. Priority notifications repeatedly notify the recipient every 2 minutes for 20 minutes."},
+  {q:"You need to restrict who can post new messages in a high-traffic announcement channel to owners only. What feature controls this?",opts:["Set the channel to private","Enable channel moderation and set who can post to 'Owners only'","Apply a messaging policy with AllowUserChat set to $false","Create a DLP policy blocking non-owner messages"],answer:1,cat:"Channel Moderation",explain:"<strong>Channel moderation</strong> lets you control who can post in a channel. When enabled, you can restrict posting to owners or selected moderators. This is configured per-channel in Teams. DLP does not restrict who can post."},
+  {q:"A user reports they cannot see a channel that others can see in the same team. What is the most likely explanation?",opts:["The user's messaging policy blocks the channel","The channel is a private channel and the user was not added","The user's Teams client is outdated","The org-wide channel settings have been restricted"],answer:1,cat:"Private Channels",trap:true,explain:"<span class='trap-warn'>Trap</span> <strong>Private channels are only visible to members who were explicitly added.</strong> Being a team member does NOT give you access to private channels in that team. Team owners can see and manage all private channels even if not a member."},
+  {q:"When renaming a channel via PowerShell, which parameter specifies the NEW name?",opts:["Set-TeamChannel -GroupId <GUID> -DisplayName 'NewName'","Set-TeamChannel -GroupId <GUID> -CurrentDisplayName 'Old' -NewDisplayName 'New'","Rename-TeamChannel -GroupId <GUID> -Name 'NewName'","Set-TeamChannel -GroupId <GUID> -Name 'NewName' -OldName 'Old'"],answer:1,cat:"PowerShell",explain:"<strong>Set-TeamChannel -GroupId &lt;GUID&gt; -CurrentDisplayName 'Old' -NewDisplayName 'New'</strong> is the correct syntax. You must specify both -CurrentDisplayName and -NewDisplayName. There is no Rename-TeamChannel cmdlet."},
+],
+apps:[
+  {q:"An admin wants to block a specific third-party app for all users in the organization. What is the correct location and action?",opts:["Teams Admin Center → Apps → Permission policies → Edit Global policy → block app","Teams Admin Center → Apps → Manage apps → find the app → Block","Microsoft Entra ID → Enterprise applications → Disable","Teams Admin Center → Apps → Setup policies → remove the app"],answer:1,cat:"App Management",explain:"<strong>To block a specific app org-wide, go to Teams Admin Center → Apps → Manage apps → find the app and set its status to Blocked.</strong> Permission policies control which categories of apps users can install, but blocking a specific app org-wide is done from Manage apps."},
+  {q:"You need to ensure all users in the Sales department automatically have the 'Salesforce' app pinned in their Teams left navigation bar. Which feature achieves this?",opts:["App permission policy","App setup policy with 'Installed apps' configuration","Org-wide app settings","The user manually pins the app"],answer:1,cat:"App Setup Policy",explain:"<strong>App setup policies</strong> allow admins to pre-install apps and pin them to the Teams navigation bar for specific users or groups. The 'Pinned apps' section controls the left bar; 'Installed apps' installs them silently in the background."},
+  {q:"What are the three categories of apps that can be controlled in a Teams App Permission policy?",opts:["Microsoft apps, Third-party apps, and Custom/LOB apps","Free apps, Paid apps, and Preview apps","Certified apps, Uncertified apps, and Blocked apps","Microsoft apps, Partner apps, and User apps"],answer:0,cat:"App Permissions",explain:"<strong>Permission policies control three app categories: Microsoft apps, Third-party apps (from the Teams store), and Custom/Line-of-business (LOB) apps</strong> uploaded to your tenant. For each category you can set Allow all, Allow specific, or Block all."},
+  {q:"A developer wants to upload a custom Teams app (.zip package) for testing before publishing org-wide. What must be enabled to allow this sideloading?",opts:["The user must be a Teams Administrator","Allow custom apps must be set to On in org-wide app settings, AND the user must have an app setup policy that allows uploading custom apps","The app must pass Microsoft's app certification first","The user must be the team owner"],answer:1,cat:"Custom Apps",trap:true,explain:"<span class='trap-warn'>Trap</span> Two settings are needed: <strong>(1) Org-wide custom apps allowed</strong> (Teams Admin Center → Apps → Manage apps → Org-wide app settings) AND <strong>(2) the user's app setup policy must have 'Upload custom apps' enabled</strong>. Both must be on — the org-wide setting is the master switch."},
+  {q:"Which Teams extensibility option allows external services to push notifications and content into a Teams channel?",opts:["Messaging extensions","Connectors","Tabs","Meeting apps"],answer:1,cat:"Extensibility",explain:"<strong>Connectors</strong> allow external services (like GitHub, Jira, RSS feeds) to push formatted messages (cards) into Teams channels. Note: Microsoft is transitioning away from the older Office 365 connector framework toward Power Automate workflows for new integrations."},
+  {q:"An organization wants to brand the Teams app store with their company logo and custom background. Where is this configured?",opts:["Microsoft 365 Admin Center → Org settings → Themes","Teams Admin Center → Apps → Customize store","SharePoint Admin Center → Branding","Microsoft Entra ID → Branding"],answer:1,cat:"App Store Customization",explain:"<strong>Teams Admin Center → Apps → Customize store</strong> allows admins to upload a logo, set a custom background color, and configure a custom app name for the Teams app store. This is separate from Microsoft 365 tenant branding."},
+  {q:"What is the correct sequence to make a custom LOB app available to all users in the organization?",opts:["Upload app → Publish to org app catalog → assign via app permission policy → assign via app setup policy (pin)","Upload app → Block in Manage apps → assign to users","Create a permission policy → upload app → grant to Global policy","The app is available immediately after upload — no further steps needed"],answer:0,cat:"Custom Apps",explain:"<strong>The correct flow:</strong> Upload the .zip package (Manage apps → Upload), which publishes it to your org's app catalog. Then control availability via app permission policy, and optionally pin it via an app setup policy. The app is NOT automatically available to everyone after upload."},
+]
+};
+
+const psExercises = [
+  {
+    title:"Exercise 1 — Create a private channel",
+    scenario:"Create a new private channel named 'Executives' in an existing team. Complete the command:",
+    lines:[{parts:[
+      {type:'sel',options:['New-TeamChannel','Add-TeamChannel','New-TeamPrivateChannel','Set-TeamChannel'],answer:'New-TeamChannel',label:'cmdlet'},
+      {type:'txt',text:' '},
+      {type:'sel',options:['-GroupId','-TeamId','-Identity','-ObjectId'],answer:'-GroupId',label:'p1'},
+      {type:'txt',text:' <GUID> '},
+      {type:'sel',options:['-DisplayName','-Name','-ChannelName','-Title'],answer:'-DisplayName',label:'p2'},
+      {type:'txt',text:' "Executives" '},
+      {type:'sel',options:['-MembershipType','-Type','-ChannelType','-Visibility'],answer:'-MembershipType',label:'p3'},
+      {type:'txt',text:' '},
+      {type:'sel',options:['Private','Standard','Shared','Restricted'],answer:'Private',label:'p4'},
+    ]}],
+    explain:"<strong>New-TeamChannel -GroupId &lt;GUID&gt; -DisplayName 'Executives' -MembershipType Private</strong><br>For standard channels omit -MembershipType or use Standard. For shared channels use Shared."
+  },
+  {
+    title:"Exercise 2 — Create a messaging policy blocking Giphy",
+    scenario:"Create a new messaging policy named 'NoFun' that disables Giphy for compliance reasons:",
+    lines:[{parts:[
+      {type:'sel',options:['New-CsTeamsMessagingPolicy','Set-CsTeamsMessagingPolicy','New-CsTeamsMeetingPolicy','Grant-CsTeamsMessagingPolicy'],answer:'New-CsTeamsMessagingPolicy',label:'cmdlet'},
+      {type:'txt',text:' '},
+      {type:'sel',options:['-Identity','-Name','-PolicyName','-DisplayName'],answer:'-Identity',label:'p1'},
+      {type:'txt',text:' "NoFun" '},
+      {type:'sel',options:['-AllowGiphy','-BlockGiphy','-EnableGiphy','-GiphyEnabled'],answer:'-AllowGiphy',label:'p2'},
+      {type:'txt',text:' '},
+      {type:'sel',options:['$false','$true','0','Disabled'],answer:'$false',label:'p3'},
+    ]}],
+    explain:"<strong>New-CsTeamsMessagingPolicy -Identity 'NoFun' -AllowGiphy $false</strong><br>Use New-Cs* to create, Set-Cs* to modify existing. Remember to Grant-CsTeamsMessagingPolicy to assign it to users."
+  },
+  {
+    title:"Exercise 3 — Archive a team",
+    scenario:"Archive the team with GroupId GUID-1234 and make its SharePoint site read-only:",
+    lines:[{parts:[
+      {type:'sel',options:['Set-TeamArchivedState','Archive-Team','Set-Team','Suspend-Team'],answer:'Set-TeamArchivedState',label:'cmdlet'},
+      {type:'txt',text:' '},
+      {type:'sel',options:['-GroupId','-TeamId','-Identity','-ObjectId'],answer:'-GroupId',label:'p1'},
+      {type:'txt',text:' GUID-1234 '},
+      {type:'sel',options:['-Archived','-State','-IsArchived','-Archive'],answer:'-Archived',label:'p2'},
+      {type:'txt',text:' '},
+      {type:'sel',options:['$true','$false','Archived','True'],answer:'$true',label:'p3'},
+      {type:'txt',text:' '},
+      {type:'sel',options:['-SetSpoSiteReadOnlyForMembers','-ReadOnly','-SpoReadOnly','-LockSharePoint'],answer:'-SetSpoSiteReadOnlyForMembers',label:'p4'},
+      {type:'txt',text:' $true'},
+    ]}],
+    explain:"<strong>Set-TeamArchivedState -GroupId GUID-1234 -Archived $true -SetSpoSiteReadOnlyForMembers $true</strong><br>The -SetSpoSiteReadOnlyForMembers flag is optional but recommended — without it, the SharePoint site remains editable even after the team is archived."
+  },
+  {
+    title:"Exercise 4 — Add a user to a private channel",
+    scenario:"Add user jane@contoso.com to the private channel 'Executives' in a team:",
+    lines:[{parts:[
+      {type:'sel',options:['Add-TeamChannelUser','Add-TeamUser','New-TeamChannelMember','Add-PrivateChannelUser'],answer:'Add-TeamChannelUser',label:'cmdlet'},
+      {type:'txt',text:' '},
+      {type:'sel',options:['-GroupId','-TeamId','-Identity','-ObjectId'],answer:'-GroupId',label:'p1'},
+      {type:'txt',text:' <GUID> '},
+      {type:'sel',options:['-DisplayName','-ChannelName','-Channel','-Name'],answer:'-DisplayName',label:'p2'},
+      {type:'txt',text:' "Executives" '},
+      {type:'sel',options:['-User','-UserPrincipalName','-Identity','-Email'],answer:'-User',label:'p3'},
+      {type:'txt',text:' "jane@contoso.com"'},
+    ]}],
+    explain:"<strong>Add-TeamChannelUser -GroupId &lt;GUID&gt; -DisplayName 'Executives' -User 'jane@contoso.com'</strong><br>Use Add-TeamChannelUser for private/shared channels. Note: the user must already be a member of the parent team to be added to a private channel."
+  },
+  {
+    title:"Exercise 5 — Grant a messaging policy to a group",
+    scenario:"Assign the 'NoFun' messaging policy to the Security group (GroupId: SEC-GUID) at rank 1:",
+    lines:[{parts:[
+      {type:'sel',options:['New-CsGroupPolicyAssignment','Grant-CsTeamsMessagingPolicy','Set-CsGroupPolicyAssignment','Add-CsGroupPolicyAssignment'],answer:'New-CsGroupPolicyAssignment',label:'cmdlet'},
+      {type:'txt',text:' '},
+      {type:'sel',options:['-GroupId','-Identity','-ObjectId','-TeamId'],answer:'-GroupId',label:'p1'},
+      {type:'txt',text:' SEC-GUID '},
+      {type:'sel',options:['-PolicyType','-PolicyCategory','-Type','-PolicyKind'],answer:'-PolicyType',label:'p2'},
+      {type:'txt',text:' TeamsMessagingPolicy '},
+      {type:'sel',options:['-PolicyName','-Name','-Policy','-Assignment'],answer:'-PolicyName',label:'p3'},
+      {type:'txt',text:' "NoFun" '},
+      {type:'sel',options:['-Rank','-Priority','-Order','-Weight'],answer:'-Rank',label:'p4'},
+      {type:'txt',text:' 1'},
+    ]}],
+    explain:"<strong>New-CsGroupPolicyAssignment -GroupId SEC-GUID -PolicyType TeamsMessagingPolicy -PolicyName 'NoFun' -Rank 1</strong><br>Group policy assignment is the scalable way to assign policies to large groups. Rank determines priority when a user is in multiple groups with conflicting policy assignments."
+  },
+];
+
+const state={};
+Object.keys(sections).forEach(s=>{state[s]={answered:0,correct:0,total:sections[s].length};});
+function switchTab(id,btn){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active');}
+function renderQuestions(section){const c=document.getElementById('q-'+section);c.innerHTML='';sections[section].forEach((q,qi)=>{const div=document.createElement('div');div.className='question-card';div.id=`qc-${section}-${qi}`;const meta=`<span class="q-num">Q${qi+1}</span><span class="q-cat">${q.cat}</span>${q.trap?'<span class="q-trap">⚠ Trap</span>':''}`;const sc=q.scenario?`<div class="scenario-box">${q.scenario}</div>`:'';const opts=q.opts.map((o,oi)=>`<button class="option-btn" onclick="answer('${section}',${qi},${oi})" id="opt-${section}-${qi}-${oi}">${o}</button>`).join('');div.innerHTML=`<div class="question-meta">${meta}</div>${sc}<div class="question-text">${q.q}</div><div class="options">${opts}</div><div class="explanation" id="exp-${section}-${qi}">${q.explain}</div>`;c.appendChild(div);});}
+function answer(section,qi,choice){const q=sections[section][qi];if(document.getElementById(`opt-${section}-${qi}-0`).disabled)return;const correct=choice===q.answer;q.opts.forEach((_,oi)=>{const btn=document.getElementById(`opt-${section}-${qi}-${oi}`);btn.disabled=true;if(oi===q.answer)btn.classList.add('correct');if(oi===choice&&!correct)btn.classList.add('wrong');});document.getElementById(`exp-${section}-${qi}`).classList.add('show');state[section].answered++;if(correct)state[section].correct++;updateScore(section);}
+function updateScore(section){const s=state[section];document.getElementById(`score-${section}`).textContent=`${s.correct} / ${s.answered}`;const pct=s.total?(s.answered/s.total*100):0;document.getElementById(`prog-${section}`).style.width=pct+'%';}
+function resetSection(section){state[section]={answered:0,correct:0,total:sections[section].length};updateScore(section);renderQuestions(section);}
+function renderPS(){const c=document.getElementById('ps-exercises');c.innerHTML='';psExercises.forEach((ex,ei)=>{const div=document.createElement('div');div.className='ps-exercise';let linesHtml='';ex.lines.forEach((line,li)=>{let lc='';line.parts.forEach((part,pi)=>{if(part.type==='txt'){lc+=part.text.replace(/\n/g,'<br>');}else{const opts=part.options.map(o=>`<option value="${o}">${o}</option>`).join('');lc+=`<select class="ps-select" id="ps-sel-${ei}-${li}-${pi}" data-answer="${part.answer}">${opts}</select>`;}});linesHtml+=`<div class="ps-line">${lc}</div>`;});div.innerHTML=`<h4>⚡ ${ex.title}</h4><div class="ps-scenario">${ex.scenario}</div>${linesHtml}<button class="ps-check-btn" onclick="checkPS(${ei})">✓ Check Answer</button><div class="ps-result" id="ps-result-${ei}"></div>`;c.appendChild(div);});}
+function checkPS(ei){const ex=psExercises[ei];let allCorrect=true,wrongList=[];ex.lines.forEach((line,li)=>{line.parts.forEach((part,pi)=>{if(part.type==='sel'){const sel=document.getElementById(`ps-sel-${ei}-${li}-${pi}`);sel.classList.remove('correct-sel','wrong-sel');if(sel.value===part.answer){sel.classList.add('correct-sel');}else{sel.classList.add('wrong-sel');allCorrect=false;wrongList.push(`Expected: <code>${part.answer}</code>`);}}}); });const r=document.getElementById(`ps-result-${ei}`);r.classList.add('show');if(allCorrect){r.className='ps-result show ok';r.innerHTML=`✅ <strong>Correct!</strong><br>${ex.explain}`;}else{r.className='ps-result show fail';r.innerHTML=`❌ <strong>Not quite.</strong> ${wrongList.join(', ')}<br><br>${ex.explain}`;}}
+Object.keys(sections).forEach(s=>renderQuestions(s));
+renderPS();
+</script>
+</body>
+</html>
